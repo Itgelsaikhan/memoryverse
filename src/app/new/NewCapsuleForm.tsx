@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Archive, Hourglass, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EMOTIONS, localYMD, type CapsuleKind } from "@/lib/capsules";
-import { COUNTRIES } from "@/lib/countries";
+import { countryList } from "@/lib/countries";
+import { useI18n } from "@/i18n/client";
 import { planDef, planErrorMessage, type MyPlan } from "@/lib/plans";
 
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -20,6 +21,8 @@ function addYears(years: number) {
 
 export default function NewCapsuleForm() {
   const router = useRouter();
+  const { t, locale } = useI18n();
+  const tn = t.newCapsule;
   const params = useSearchParams();
   const [kind, setKind] = useState<CapsuleKind>(params.get("kind") === "future" ? "future" : "memory");
   const [title, setTitle] = useState("");
@@ -48,6 +51,8 @@ export default function NewCapsuleForm() {
   // Latest allowed opening date for the user's plan (pure string math on today's date)
   const maxUnlock = `${Number(today.slice(0, 4)) + maxYears}${today.slice(4)}`;
   const [error, setError] = useState<string | null>(null);
+  const [suggestUpgrade, setSuggestUpgrade] = useState(false);
+  const countries = useMemo(() => countryList(locale), [locale]);
 
   const preview = useMemo(
     () => (file && file.type.startsWith("image/") ? URL.createObjectURL(file) : null),
@@ -56,13 +61,15 @@ export default function NewCapsuleForm() {
 
   function pickFile(f: File | undefined) {
     setError(null);
+    setSuggestUpgrade(false);
     if (!f) return;
     if (f.size > MAX_BYTES) {
-      setError("File is too large (max 50 MB).");
+      setError(tn.errors.fileTooLarge);
       return;
     }
     if (f.type.startsWith("video/") && effective === "free") {
-      setError("Video capsules are a Premium feature.");
+      setError(tn.errors.videoPremium);
+      setSuggestUpgrade(true);
       return;
     }
     setFile(f);
@@ -71,12 +78,13 @@ export default function NewCapsuleForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuggestUpgrade(false);
     if (kind === "future" && new Date(unlockDate) <= new Date()) {
-      setError("The opening date must be in the future.");
+      setError(tn.errors.opensInFuture);
       return;
     }
     if (isPublic && kind === "memory" && !country) {
-      setError("Choose a country to share this memory on the Humanity Map.");
+      setError(tn.errors.chooseCountry);
       return;
     }
     setSaving(true);
@@ -85,7 +93,7 @@ export default function NewCapsuleForm() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Please log in again.");
+      if (!user) throw new Error(tn.errors.loginAgain);
 
       let media_path: string | null = null;
       if (file) {
@@ -112,13 +120,15 @@ export default function NewCapsuleForm() {
       });
       if (insErr) {
         if (media_path) await supabase.storage.from("media").remove([media_path]);
-        throw new Error(planErrorMessage(insErr.message) ?? insErr.message);
+        const friendly = planErrorMessage(insErr.message, t);
+        if (friendly) setSuggestUpgrade(true);
+        throw new Error(friendly ?? insErr.message);
       }
 
       router.push(kind === "future" ? "/future" : "/vault");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save the capsule.");
+      setError(err instanceof Error ? err.message : tn.errors.couldNotSave);
       setSaving(false);
     }
   }
@@ -126,15 +136,15 @@ export default function NewCapsuleForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Create a capsule</h1>
-        <p className="mt-1 text-white/60">Keep a memory, or send a message to your future self.</p>
+        <h1 className="text-3xl font-bold">{tn.title}</h1>
+        <p className="mt-1 text-white/60">{tn.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         {(
           [
-            { id: "memory", label: "Memory", sub: "Save it to your vault", icon: Archive },
-            { id: "future", label: "Future capsule", sub: "Sealed until a date", icon: Hourglass },
+            { id: "memory", label: tn.kindMemory, sub: tn.kindMemorySub, icon: Archive },
+            { id: "future", label: tn.kindFuture, sub: tn.kindFutureSub, icon: Hourglass },
           ] as const
         ).map((k) => (
           <button
@@ -156,12 +166,12 @@ export default function NewCapsuleForm() {
 
       <div className="glass space-y-5 p-6">
         <label className="block text-sm">
-          <span className="mb-1 block text-white/70">Title *</span>
+          <span className="mb-1 block text-white/70">{tn.fieldTitle}</span>
           <input
             className="input"
             required
             maxLength={120}
-            placeholder={kind === "future" ? "Letter to me at 25" : "Summer at grandma's countryside"}
+            placeholder={kind === "future" ? tn.placeholderTitleFuture : tn.placeholderTitleMemory}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -169,15 +179,13 @@ export default function NewCapsuleForm() {
 
         <label className="block text-sm">
           <span className="mb-1 block text-white/70">
-            {kind === "future" ? "Your letter & predictions" : "Your memory"}
+            {kind === "future" ? tn.fieldLetter : tn.fieldMemory}
           </span>
           <textarea
             className="input min-h-36"
             maxLength={10000}
             placeholder={
-              kind === "future"
-                ? "Dear future me… By the time you read this, I think you will…"
-                : "What happened? Who was there? How did it feel?"
+              kind === "future" ? tn.placeholderLetter : tn.placeholderMemory
             }
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -185,7 +193,7 @@ export default function NewCapsuleForm() {
         </label>
 
         <div className="text-sm">
-          <span className="mb-1 block text-white/70">Photo, voice or video (optional)</span>
+          <span className="mb-1 block text-white/70">{tn.media}</span>
           {file ? (
             <div className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
               {preview ? (
@@ -195,7 +203,7 @@ export default function NewCapsuleForm() {
                 <span className="grid h-16 w-16 place-items-center rounded-lg bg-white/5 text-2xl">🎞️</span>
               )}
               <span className="flex-1 truncate">{file.name}</span>
-              <button type="button" onClick={() => setFile(null)} aria-label="Remove file">
+              <button type="button" onClick={() => setFile(null)} aria-label={tn.removeFile}>
                 <X size={18} />
               </button>
             </div>
@@ -209,7 +217,7 @@ export default function NewCapsuleForm() {
               }}
             >
               <Upload size={22} />
-              Drop a file here or click to choose (max 50 MB{effective === "free" ? ", video on Premium" : ""})
+              {tn.drop(effective === "free")}
               <input
                 type="file"
                 accept={ACCEPT}
@@ -221,7 +229,7 @@ export default function NewCapsuleForm() {
         </div>
 
         <div className="text-sm">
-          <span className="mb-2 block text-white/70">How does it feel?</span>
+          <span className="mb-2 block text-white/70">{tn.feel}</span>
           <div className="flex flex-wrap gap-2">
             {EMOTIONS.map((em) => (
               <button
@@ -234,7 +242,7 @@ export default function NewCapsuleForm() {
                   background: emotion === em.id ? `${em.color}26` : "transparent",
                 }}
               >
-                {em.emoji} {em.label}
+                {em.emoji} {t.emotions[em.id]}
               </button>
             ))}
           </div>
@@ -243,7 +251,7 @@ export default function NewCapsuleForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           {kind === "memory" ? (
             <label className="block text-sm">
-              <span className="mb-1 block text-white/70">When did it happen?</span>
+              <span className="mb-1 block text-white/70">{tn.when}</span>
               <input
                 className="input"
                 type="date"
@@ -254,7 +262,7 @@ export default function NewCapsuleForm() {
             </label>
           ) : (
             <label className="block text-sm">
-              <span className="mb-1 block text-white/70">Opens on *</span>
+              <span className="mb-1 block text-white/70">{tn.opensOn}</span>
               <input
                 className="input"
                 type="date"
@@ -272,18 +280,18 @@ export default function NewCapsuleForm() {
                     className="rounded-full bg-white/5 px-2 py-0.5 hover:bg-white/10"
                     onClick={() => setUnlockDate(addYears(y))}
                   >
-                    +{y} year{y > 1 ? "s" : ""}
+                    {tn.plusYears(y)}
                   </button>
                 ))}
               </span>
             </label>
           )}
           <label className="block text-sm">
-            <span className="mb-1 block text-white/70">Place</span>
+            <span className="mb-1 block text-white/70">{tn.place}</span>
             <input
               className="input"
               maxLength={120}
-              placeholder="Ulaanbaatar, Mongolia"
+              placeholder={tn.placePlaceholder}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -291,21 +299,21 @@ export default function NewCapsuleForm() {
         </div>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-white/70">Topic</span>
+          <span className="mb-1 block text-white/70">{tn.topic}</span>
           <input
             className="input"
             maxLength={40}
-            placeholder="family, travel, career…"
+            placeholder={tn.topicPlaceholder}
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
           />
         </label>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-white/70">Country</span>
+          <span className="mb-1 block text-white/70">{tn.country}</span>
           <select className="input" value={country} onChange={(e) => setCountry(e.target.value)}>
-            <option value="">— Not specified —</option>
-            {COUNTRIES.map(([code, name]) => (
+            <option value="">{tn.notSpecified}</option>
+            {countries.map(([code, name]) => (
               <option key={code} value={code}>
                 {name}
               </option>
@@ -322,15 +330,13 @@ export default function NewCapsuleForm() {
               className="mt-0.5 h-4 w-4 accent-violet-500"
             />
             <span>
-              Share anonymously on the Humanity Map
-              <span className="block text-xs text-white/45">
-                Only the text, emotion, topic and country are shared — never your name, photo or exact place.
-              </span>
+              {tn.share}
+              <span className="block text-xs text-white/45">{tn.shareHint}</span>
             </span>
           </label>
         ) : (
           <p className="text-xs text-white/45">
-            🔒 Future capsules are always private and never appear on the Humanity Map.
+            {tn.futurePrivate}
           </p>
         )}
       </div>
@@ -338,11 +344,11 @@ export default function NewCapsuleForm() {
       {error && (
         <p className="rounded-lg bg-red-500/15 p-3 text-sm text-red-300">
           {error}
-          {effective === "free" && /Premium|Free plan|5 years/.test(error) && (
+          {effective === "free" && suggestUpgrade && (
             <>
               {" "}
               <Link href="/pricing" className="underline">
-                See plans
+                {t.common.seePlans}
               </Link>
             </>
           )}
@@ -350,7 +356,7 @@ export default function NewCapsuleForm() {
       )}
 
       <button className="btn-primary w-full justify-center" disabled={saving}>
-        {saving ? "Saving…" : kind === "future" ? "Seal capsule 🔒" : "Save memory"}
+        {saving ? t.common.saving : kind === "future" ? tn.seal : tn.saveMemory}
       </button>
     </form>
   );

@@ -1,35 +1,12 @@
 import Link from "next/link";
 import { Archive, BarChart3, Globe2, Hourglass, Lock, ArrowRight } from "lucide-react";
+import { getI18n } from "@/i18n/server";
 
 const FEATURES = [
-  {
-    icon: Archive,
-    title: "Memory Vault",
-    text: "Photos, voice notes, videos and letters — your private, searchable box of memories.",
-    href: "/vault",
-    accent: "text-amber-mv",
-  },
-  {
-    icon: Hourglass,
-    title: "Future Capsule",
-    text: "Seal a letter and your predictions. Not even you can open it until the day arrives.",
-    href: "/future",
-    accent: "text-cyan-mv",
-  },
-  {
-    icon: Globe2,
-    title: "Humanity Map",
-    text: "Anonymous memories and dreams from around the world, mapped by emotion.",
-    href: "/map",
-    accent: "text-violet-mv",
-  },
-  {
-    icon: BarChart3,
-    title: "Time Analytics",
-    text: "See how people's values and dreams shift across years and countries.",
-    href: "/analytics",
-    accent: "text-pink-400",
-  },
+  { icon: Archive, href: "/vault", accent: "text-amber-mv" },
+  { icon: Hourglass, href: "/future", accent: "text-cyan-mv" },
+  { icon: Globe2, href: "/map", accent: "text-violet-mv" },
+  { icon: BarChart3, href: "/analytics", accent: "text-pink-400" },
 ];
 
 const ORBIT = [
@@ -40,29 +17,29 @@ const ORBIT = [
   { emoji: "✨", style: "top-[50%] -left-[2%]" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const { t } = await getI18n();
   return (
     <div className="mx-auto max-w-6xl px-4">
       <section className="grid items-center gap-12 py-16 md:grid-cols-2 md:py-24">
         <div>
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
-            <Lock size={12} /> Private by default · Time-locked by design
+            <Lock size={12} /> {t.home.badge}
           </p>
           <h1 className="text-4xl leading-tight font-bold tracking-tight md:text-6xl">
-            Every memory is a star.
+            {t.home.title1}
             <br />
-            <span className="text-future">Every dream is a future.</span>
+            <span className="text-future">{t.home.title2}</span>
           </h1>
           <p className="mt-6 max-w-lg text-lg text-white/65">
-            Save your memories, seal letters to your future self, and see how humanity&apos;s
-            dreams change over time.
+            {t.home.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/new" className="btn-primary">
-              Create your first capsule <ArrowRight size={16} />
+              {t.home.ctaCreate} <ArrowRight size={16} />
             </Link>
             <Link href="/map" className="btn-ghost">
-              Explore the Humanity Map
+              {t.home.ctaMap}
             </Link>
           </div>
         </div>
@@ -85,11 +62,11 @@ export default function Home() {
       </section>
 
       <section className="grid gap-4 pb-16 sm:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((f) => (
-          <Link key={f.title} href={f.href} className="glass p-6 transition hover:bg-white/[0.07]">
+        {FEATURES.map((f, i) => (
+          <Link key={f.href} href={f.href} className="glass p-6 transition hover:bg-white/[0.07]">
             <f.icon className={f.accent} size={28} />
-            <h3 className="mt-4 font-semibold">{f.title}</h3>
-            <p className="mt-2 text-sm text-white/60">{f.text}</p>
+            <h3 className="mt-4 font-semibold">{t.home.features[i].title}</h3>
+            <p className="mt-2 text-sm text-white/60">{t.home.features[i].text}</p>
           </Link>
         ))}
       </section>
@@ -97,15 +74,15 @@ export default function Home() {
       <section className="glass mb-20 grid gap-6 p-8 text-center sm:grid-cols-3">
         <div>
           <div className="text-3xl font-bold text-amber-mv">1</div>
-          <div className="mt-1 text-sm text-white/60">Write or record a memory</div>
+          <div className="mt-1 text-sm text-white/60">{t.home.steps[0]}</div>
         </div>
         <div>
           <div className="text-3xl font-bold text-violet-mv">2</div>
-          <div className="mt-1 text-sm text-white/60">Choose when it opens — or keep it forever</div>
+          <div className="mt-1 text-sm text-white/60">{t.home.steps[1]}</div>
         </div>
         <div>
           <div className="text-3xl font-bold text-cyan-mv">3</div>
-          <div className="mt-1 text-sm text-white/60">Meet your past self and see what changed</div>
+          <div className="mt-1 text-sm text-white/60">{t.home.steps[2]}</div>
         </div>
       </section>
     </div>

@@ -1,3 +1,5 @@
+import en, { type Dictionary } from "@/i18n/dictionaries/en";
+
 export type PlanId = "free" | "premium" | "legacy";
 export type Period = "month" | "year";
 
@@ -65,12 +67,13 @@ export type MyPlan = {
 };
 
 /** Friendly messages for errors raised by the database */
-export function planErrorMessage(message: string) {
-  if (message.includes("FREE_LIMIT_REACHED")) return "You've reached the 50-capsule limit of the Free plan.";
-  if (message.includes("PLAN_UNLOCK_LIMIT")) return "On the Free plan, capsules can be sealed for up to 5 years.";
-  if (message.includes("PLAN_VIDEO")) return "Video capsules are a Premium feature.";
-  if (message.includes("UNLOCK_TOO_FAR")) return "Capsules can be sealed for up to 50 years.";
-  if (message.includes("PLAN_LEGACY_REQUIRED")) return "This needs the Legacy plan.";
-  if (message.includes("LEGACY_CONTACT_LIMIT")) return "You can add up to 5 trusted contacts.";
+export function planErrorMessage(message: string, t: Dictionary = en) {
+  const e = t.planErrors;
+  if (message.includes("FREE_LIMIT_REACHED")) return e.freeLimit;
+  if (message.includes("PLAN_UNLOCK_LIMIT")) return e.unlockLimit;
+  if (message.includes("PLAN_VIDEO")) return e.video;
+  if (message.includes("UNLOCK_TOO_FAR")) return e.tooFar;
+  if (message.includes("PLAN_LEGACY_REQUIRED")) return e.legacyRequired;
+  if (message.includes("LEGACY_CONTACT_LIMIT")) return e.contactLimit;
   return null;
 }

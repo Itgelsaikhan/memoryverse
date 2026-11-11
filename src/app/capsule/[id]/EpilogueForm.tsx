@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/i18n/client";
 
 export default function EpilogueForm({ id, initial }: { id: string; initial: string }) {
+  const { t } = useI18n();
   const [text, setText] = useState(initial);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -21,7 +23,7 @@ export default function EpilogueForm({ id, initial }: { id: string; initial: str
       <textarea
         className="input min-h-48"
         maxLength={5000}
-        placeholder="Dear past me… Here's what came true, and what didn't."
+        placeholder={t.capsule.epiloguePlaceholder}
         value={text}
         onChange={(e) => {
           setText(e.target.value);
@@ -30,10 +32,10 @@ export default function EpilogueForm({ id, initial }: { id: string; initial: str
       />
       <div className="flex items-center gap-3">
         <button type="button" onClick={save} className="btn-primary" disabled={status === "saving"}>
-          {status === "saving" ? "Saving…" : "Save epilogue"}
+          {status === "saving" ? t.common.saving : t.capsule.saveEpilogue}
         </button>
-        {status === "saved" && <span className="text-sm text-emerald-300">Saved ✓</span>}
-        {status === "error" && <span className="text-sm text-red-300">Could not save. Try again.</span>}
+        {status === "saved" && <span className="text-sm text-emerald-300">{t.common.saved}</span>}
+        {status === "error" && <span className="text-sm text-red-300">{t.capsule.saveFailed}</span>}
       </div>
     </div>
   );

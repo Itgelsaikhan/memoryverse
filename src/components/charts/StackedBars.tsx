@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { INTL_LOCALE } from "@/i18n/config";
+import { useI18n } from "@/i18n/client";
 
 export type StackSegment = { key: string; label: string; color: string };
 export type StackRow = { label: string; values: Record<string, number> };
@@ -10,13 +12,15 @@ export default function StackedBars({
   rows,
   segments,
   ariaLabel,
-  unitLabel = "moments",
+  unitLabel,
 }: {
   rows: StackRow[];
   segments: StackSegment[];
   ariaLabel: string;
   unitLabel?: string;
 }) {
+  const { t, locale } = useI18n();
+  const fmt = (v: number) => v.toLocaleString(INTL_LOCALE[locale]);
   const [hover, setHover] = useState<{ row: string; seg: string; x: number } | null>(null);
   const [showTable, setShowTable] = useState(false);
 
@@ -32,7 +36,7 @@ export default function StackedBars({
           </span>
         ))}
         <button className="ml-auto text-white/50 underline-offset-2 hover:underline" onClick={() => setShowTable((v) => !v)}>
-          {showTable ? "Show chart" : "Show table"}
+          {showTable ? t.common.showChart : t.common.showTable}
         </button>
       </div>
 
@@ -41,7 +45,7 @@ export default function StackedBars({
           <table className="w-full text-left text-sm">
             <thead className="text-white/60">
               <tr>
-                <th className="px-3 py-2">Group</th>
+                <th className="px-3 py-2">{t.charts.group}</th>
                 {segments.map((s) => (
                   <th key={s.key} className="px-3 py-2">
                     {s.label}
@@ -92,7 +96,7 @@ export default function StackedBars({
                     );
                   })}
                 </div>
-                <span className="w-16 shrink-0 text-xs text-white/40">{totals[i].toLocaleString()}</span>
+                <span className="w-16 shrink-0 text-xs text-white/40">{fmt(totals[i])}</span>
               </div>
             );
           })}
@@ -107,13 +111,13 @@ export default function StackedBars({
                   className="pointer-events-none absolute z-10 rounded-lg border border-white/10 bg-space-900/95 px-3 py-2 text-xs shadow-xl"
                   style={{ top: i * 40 - 44, left: `calc(4.25rem + (100% - 9.5rem) * ${hover.x / 100})`, transform: "translateX(-50%)" }}
                 >
-                  <p className="font-semibold">Age {hover.row}</p>
+                  <p className="font-semibold">{t.charts.age(hover.row)}</p>
                   <p className="flex items-center gap-1.5 text-white/70">
                     <span className="h-2 w-2 rounded-full" style={{ background: seg.color }} />
                     {seg.label}: <span className="font-medium text-white">{((v / totals[i]) * 100).toFixed(1)}%</span>
                   </p>
                   <p className="text-white/45">
-                    {v.toLocaleString()} {unitLabel}
+                    {fmt(v)} {unitLabel ?? t.charts.moments}
                   </p>
                 </div>
               );

@@ -6,10 +6,10 @@ import PageSkeleton from "@/components/PageSkeleton";
 import { EMOTIONS, formatDay, type Capsule } from "@/lib/capsules";
 import { SERIES } from "@/lib/palette";
 import type { MyPlan } from "@/lib/plans";
+import { getI18n } from "@/i18n/server";
 
 export const metadata = { title: "Year in Review · MemoryVerse" };
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default function YearPage({ searchParams }: PageProps<"/year">) {
   return (
@@ -26,7 +26,9 @@ function dateOf(c: Capsule) {
 
 async function YearContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
-  const supabase = await createClient();
+  const [supabase, { t, locale }] = await Promise.all([createClient(), getI18n()]);
+  const ty = t.year;
+  const MONTHS = ty.months;
   const { data: planRow } = await supabase.rpc("my_plan").maybeSingle();
   const plan = planRow as MyPlan | null;
 
@@ -34,12 +36,12 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
         <Crown className="mx-auto text-amber-mv" size={40} />
-        <h1 className="mt-4 text-3xl font-bold">Your Year in Review</h1>
+        <h1 className="mt-4 text-3xl font-bold">{ty.upsellTitle}</h1>
         <p className="mt-2 text-white/60">
-          A personal report of your year: the emotions, places and people that filled it. Available on Premium and Legacy.
+          {ty.upsellText}
         </p>
         <Link href="/pricing" className="btn-primary mt-6">
-          See plans
+          {t.common.seePlans}
         </Link>
       </div>
     );
@@ -73,7 +75,7 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs tracking-widest text-amber-mv">YEAR IN REVIEW</p>
+          <p className="text-xs tracking-widest text-amber-mv">{ty.label}</p>
           <h1 className="text-5xl font-bold">{year}</h1>
         </div>
         {years.length > 1 && (
@@ -89,39 +91,39 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
 
       {items.length === 0 ? (
         <div className="glass mt-8 p-10 text-center text-white/60">
-          No memories in {year} yet.{" "}
+          {ty.noMemories(year)}{" "}
           <Link href="/new" className="text-cyan-mv underline">
-            Add one
+            {ty.addOne}
           </Link>
         </div>
       ) : (
         <>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <div className="glass p-5">
-              <p className="text-xs text-white/50">Memories kept</p>
+              <p className="text-xs text-white/50">{ty.kept}</p>
               <p className="mt-1 text-4xl font-bold">{items.length}</p>
             </div>
             <div className="glass p-5">
-              <p className="text-xs text-white/50">Most active month</p>
+              <p className="text-xs text-white/50">{ty.activeMonth}</p>
               <p className="mt-1 text-4xl font-bold">{MONTHS[topMonth]}</p>
             </div>
             <div className="glass p-5">
-              <p className="text-xs text-white/50">Main feeling</p>
+              <p className="text-xs text-white/50">{ty.mainFeeling}</p>
               <p className="mt-1 text-4xl font-bold">
-                {emotionCounts[0] ? `${emotionCounts[0].emoji} ${emotionCounts[0].label}` : "—"}
+                {emotionCounts[0] ? `${emotionCounts[0].emoji} ${t.emotions[emotionCounts[0].id]}` : "—"}
               </p>
             </div>
           </div>
 
           <section className="glass mt-6 p-6">
-            <h2 className="font-semibold">Memories by month</h2>
-            <div className="mt-5 flex h-40 items-end gap-2" role="img" aria-label={`Memories per month in ${year}`}>
+            <h2 className="font-semibold">{ty.byMonth}</h2>
+            <div className="mt-5 flex h-40 items-end gap-2" role="img" aria-label={ty.monthAria(year)}>
               {byMonth.map((n, m) => (
                 <div key={m} className="group flex flex-1 flex-col items-center gap-1">
                   <span className="text-xs text-white/60 opacity-0 group-hover:opacity-100">{n}</span>
                   <div
                     className="w-full rounded-t"
-                    title={`${MONTHS[m]}: ${n} ${n === 1 ? "memory" : "memories"}`}
+                    title={ty.monthTitle(MONTHS[m], n)}
                     style={{ height: `${(n / maxMonth) * 110}px`, minHeight: n ? 4 : 1, background: n ? SERIES[0] : "rgba(255,255,255,0.08)" }}
                   />
                   <span className="text-[10px] text-white/45">{MONTHS[m]}</span>
@@ -132,16 +134,16 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <section className="glass p-6">
-              <h2 className="font-semibold">Your emotions</h2>
+              <h2 className="font-semibold">{ty.emotions}</h2>
               {emotionCounts.length === 0 ? (
-                <p className="mt-2 text-sm text-white/50">Tag memories with an emotion to see this.</p>
+                <p className="mt-2 text-sm text-white/50">{ty.emotionsEmpty}</p>
               ) : (
                 <ul className="mt-4 space-y-2">
                   {emotionCounts.map((e) => (
                     <li key={e.id} className="text-sm">
                       <div className="flex justify-between">
                         <span>
-                          {e.emoji} {e.label}
+                          {e.emoji} {t.emotions[e.id]}
                         </span>
                         <span className="text-white/60">{Math.round((e.n / withEmotion) * 100)}%</span>
                       </div>
@@ -154,7 +156,7 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
               )}
             </section>
             <section className="glass p-6">
-              <h2 className="font-semibold">Places & topics</h2>
+              <h2 className="font-semibold">{ty.placesTopics}</h2>
               <ul className="mt-4 space-y-2 text-sm">
                 {places.map(([p, n]) => (
                   <li key={p} className="flex items-center justify-between">
@@ -170,7 +172,7 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
                     <span className="text-white/50">{n}</span>
                   </li>
                 ))}
-                {places.length + topics.length === 0 && <li className="text-white/50">Add places and topics to your memories.</li>}
+                {places.length + topics.length === 0 && <li className="text-white/50">{ty.placesEmpty}</li>}
               </ul>
             </section>
           </div>
@@ -178,14 +180,14 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
           {first && last && (
             <section className="glass mt-6 grid gap-6 p-6 sm:grid-cols-2">
               {[
-                { label: "First memory of the year", c: first },
-                { label: "Latest memory", c: last },
+                { label: ty.first, c: first },
+                { label: ty.latest, c: last },
               ].map(({ label, c }) => (
                 <Link key={label} href={`/capsule/${c.id}`} className="block rounded-xl bg-white/5 p-4 hover:bg-white/10">
                   <p className="text-xs text-white/50">{label}</p>
                   <p className="mt-1 font-semibold">{c.title}</p>
                   <p className="text-xs text-white/45">
-                    {c.memory_date ? formatDay(c.memory_date) : dateOf(c).toISOString().slice(0, 10)}
+                    {c.memory_date ? formatDay(c.memory_date, locale) : dateOf(c).toISOString().slice(0, 10)}
                   </p>
                 </Link>
               ))}

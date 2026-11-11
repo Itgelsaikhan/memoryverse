@@ -6,6 +6,7 @@ import type { GeoJSONSource, Map as MLMap, MapLayerMouseEvent } from "maplibre-g
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Search, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/i18n/client";
 import { EMOTIONS, emotionOf } from "@/lib/capsules";
 import { countryName } from "@/lib/countries";
 import { MIN_SAMPLE, STAT_EMOTIONS, topicLabel, type CountryStats, type StatEmotion } from "@/lib/stats";
@@ -49,6 +50,10 @@ function colorize(base: GeoJSON.FeatureCollection, stats: Map<string, CountrySta
 }
 
 export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
+  const { t, locale } = useI18n();
+  const tm = t.map;
+  const cname = (c: string | null) => countryName(c, locale);
+  const emLabel = (id: string | null) => (id ? (t.emotions[id] ?? id) : "");
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const baseRef = useRef<GeoJSON.FeatureCollection | null>(null);
@@ -190,11 +195,11 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
     <div className="relative h-[calc(100dvh-6.25rem)] min-h-[480px] w-full overflow-hidden md:h-[calc(100vh-4rem)] md:min-h-[560px]">
       {/* maplibre's CSS sets position:relative on the map element, so it lives inside an absolute wrapper */}
       <div className="absolute inset-0">
-        <div ref={container} className="h-full w-full" aria-label="World map of shared moments" />
+        <div ref={container} className="h-full w-full" aria-label={tm.aria} />
       </div>
 
       {mapError && (
-        <div className="absolute inset-0 grid place-items-center text-white/60">Could not load the map. Please refresh.</div>
+        <div className="absolute inset-0 grid place-items-center text-white/60">{tm.loadError}</div>
       )}
 
       {/* Left panel: totals, filter, search */}
@@ -205,9 +210,9 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">Humanity Map</h1>
+            <h1 className="text-xl font-bold">{tm.title}</h1>
             <p className="mt-1 text-sm text-white/60">
-              {totals.all.toLocaleString()} moments from {stats.length} countries
+              {tm.summary(totals.all, stats.length)}
             </p>
           </div>
           <button
@@ -215,18 +220,18 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
             onClick={() => setShowFilters((v) => !v)}
             aria-expanded={showFilters}
           >
-            {showFilters ? "Hide" : "Filters"}
+            {showFilters ? tm.hide : tm.filters}
           </button>
         </div>
         <div className={showFilters ? "block" : "hidden md:block"}>
 
         {stats.length === 0 && (
           <p className="mt-4 rounded-lg bg-white/5 p-3 text-sm text-white/60">
-            No data yet. An admin can import datasets from the Admin page.
+            {tm.noData}
           </p>
         )}
 
-        <p className="mt-5 mb-2 text-xs tracking-widest text-white/50">COLOR BY</p>
+        <p className="mt-5 mb-2 text-xs tracking-widest text-white/50">{tm.colorBy}</p>
         <div className="flex flex-wrap gap-2 text-sm">
           <button
             onClick={() => {
@@ -235,7 +240,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
             }}
             className={`rounded-full border px-3 py-1 ${!filter ? "border-white bg-white/10" : "border-white/15"}`}
           >
-            Top emotion
+            {tm.topEmotion}
           </button>
           {EMOTIONS.filter((e) => totals.byEmotion[e.id as StatEmotion] > 0).map((e) => (
             <button
@@ -250,32 +255,33 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
                 background: filter === e.id ? `${e.color}26` : "transparent",
               }}
             >
-              {e.emoji} {e.label}
+              {e.emoji} {emLabel(e.id)}
             </button>
           ))}
         </div>
         <p className="mt-2 text-xs text-white/40">
           {filter
-            ? `Brighter = larger share of "${emotionOf(filter)?.label}" moments (countries with ${MIN_SAMPLE}+ moments).`
-            : "Each country takes the color of its most common emotion. Brighter = more moments."}
+            ? tm.legendFilter(emLabel(filter), MIN_SAMPLE)
+            : tm.legendTop}
         </p>
 
         <form onSubmit={runSearch} className="mt-5 flex gap-2">
           <input
             className="input text-sm"
-            placeholder="Search humanity… e.g. graduation"
+            placeholder={tm.searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="btn-ghost px-3!" aria-label="Search" disabled={searching}>
+          <button className="btn-ghost px-3!" aria-label={tm.search} disabled={searching}>
             <Search size={16} />
           </button>
         </form>
+        {locale !== "en" && <p className="mt-1 text-[11px] text-white/35">{tm.searchNote}</p>}
         {hits && (
           <div className="mt-3 space-y-2">
             <div className="flex items-center justify-between text-xs text-white/50">
-              <span>{hits.length ? `${hits.length} results` : "No results"}</span>
-              <button onClick={() => setHits(null)} aria-label="Clear search">
+              <span>{hits.length ? tm.results(hits.length) : tm.noResults}</span>
+              <button onClick={() => setHits(null)} aria-label={tm.clearSearch}>
                 <X size={14} />
               </button>
             </div>
@@ -291,7 +297,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
               >
                 <span className="line-clamp-3">“{h.text}”</span>
                 <span className="mt-1 block text-xs text-white/45">
-                  {emotionOf(h.emotion)?.emoji} {countryName(h.country)}
+                  {emotionOf(h.emotion)?.emoji} {cname(h.country)}
                 </span>
               </button>
             ))}
@@ -305,12 +311,12 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
         <aside className="glass absolute inset-x-2 bottom-2 z-10 max-h-[60%] overflow-y-auto p-4 md:inset-x-auto md:top-4 md:right-4 md:bottom-auto md:max-h-[calc(100%-2rem)] md:w-[360px] md:p-5">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold">{countryName(selected)}</h2>
+              <h2 className="text-xl font-bold">{cname(selected)}</h2>
               <p className="text-sm text-white/60">
-                {sel ? `${sel.total.toLocaleString()} moments` : "No moments shared yet"}
+                {sel ? tm.moments(sel.total) : tm.noneShared}
               </p>
             </div>
-            <button onClick={() => setSelected(null)} aria-label="Close">
+            <button onClick={() => setSelected(null)} aria-label={tm.close}>
               <X size={18} />
             </button>
           </div>
@@ -319,7 +325,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
             <>
               {sel.total < MIN_SAMPLE && (
                 <p className="mt-3 rounded-lg bg-amber-mv/10 p-2 text-xs text-amber-mv">
-                  Small sample — percentages may not be representative.
+                  {tm.smallSample}
                 </p>
               )}
               <div className="mt-4 space-y-2">
@@ -332,7 +338,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
                       <div key={e} className="text-sm">
                         <div className="flex justify-between">
                           <span>
-                            {em.emoji} {em.label}
+                            {em.emoji} {emLabel(em.id)}
                           </span>
                           <span className="text-white/60">{pct.toFixed(1)}%</span>
                         </div>
@@ -344,27 +350,27 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
                   })}
               </div>
               <p className="mt-4 text-sm text-white/60">
-                Most common topic: <span className="text-white">{topicLabel(sel.top_topic)}</span>
+                {tm.commonTopic} <span className="text-white">{topicLabel(sel.top_topic, t.topics)}</span>
               </p>
             </>
           )}
 
           <h3 className="mt-6 mb-2 text-xs tracking-widest text-white/50">
-            {filter ? `${emotionOf(filter)?.label.toUpperCase()} MOMENTS` : "REAL MOMENTS"}
+            {filter ? tm.emotionMoments(emLabel(filter)) : tm.realMoments}
           </h3>
           {samples === null ? (
-            <p className="text-sm text-white/40">Loading…</p>
+            <p className="text-sm text-white/40">{t.common.loading}</p>
           ) : samples.length === 0 ? (
-            <p className="text-sm text-white/40">Nothing to show here yet.</p>
+            <p className="text-sm text-white/40">{tm.nothing}</p>
           ) : (
             <ul className="space-y-2">
               {samples.map((s, i) => (
                 <li key={i} className="rounded-lg bg-white/5 p-3 text-sm">
                   “{s.text}”
                   <span className="mt-1 block text-xs text-white/45">
-                    {emotionOf(s.emotion)?.emoji} {topicLabel(s.topic)}
-                    {s.age ? ` · age ${s.age}` : ""}
-                    {s.source === "user" ? " · shared on MemoryVerse" : ""}
+                    {emotionOf(s.emotion)?.emoji} {topicLabel(s.topic, t.topics)}
+                    {s.age ? ` · ${tm.age(s.age)}` : ""}
+                    {s.source === "user" ? ` · ${tm.sharedHere}` : ""}
                   </span>
                 </li>
               ))}

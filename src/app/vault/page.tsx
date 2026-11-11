@@ -4,6 +4,7 @@ import PageSkeleton from "@/components/PageSkeleton";
 import { Plus } from "lucide-react";
 import CapsuleCard from "@/components/CapsuleCard";
 import { getMyCapsules } from "@/lib/data";
+import { getI18n } from "@/i18n/server";
 
 export const metadata = { title: "Memory Vault · MemoryVerse" };
 
@@ -16,7 +17,7 @@ export default function VaultPage() {
 }
 
 async function VaultPageContent() {
-  const { capsules, urls } = await getMyCapsules("memory");
+  const [{ capsules, urls }, { t }] = await Promise.all([getMyCapsules("memory"), getI18n()]);
 
   const byYear = new Map<string, typeof capsules>();
   for (const c of capsules) {
@@ -28,23 +29,21 @@ async function VaultPageContent() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">My Memory Vault</h1>
-          <p className="mt-1 text-white/60">
-            {capsules.length} {capsules.length === 1 ? "memory" : "memories"} kept safe
-          </p>
+          <h1 className="text-3xl font-bold">{t.vault.title}</h1>
+          <p className="mt-1 text-white/60">{t.vault.kept(capsules.length)}</p>
         </div>
         <Link href="/new" className="btn-primary">
-          <Plus size={16} /> New capsule
+          <Plus size={16} /> {t.vault.newCapsule}
         </Link>
       </div>
 
       {capsules.length === 0 ? (
         <div className="glass mt-10 p-12 text-center">
           <p className="text-4xl">🌌</p>
-          <h2 className="mt-4 text-xl font-semibold">Your universe is still empty</h2>
-          <p className="mt-2 text-white/60">Add your first memory — a photo, a voice note or a few lines.</p>
+          <h2 className="mt-4 text-xl font-semibold">{t.vault.emptyTitle}</h2>
+          <p className="mt-2 text-white/60">{t.vault.emptyText}</p>
           <Link href="/new" className="btn-primary mt-6">
-            <Plus size={16} /> Create a capsule
+            <Plus size={16} /> {t.vault.create}
           </Link>
         </div>
       ) : (

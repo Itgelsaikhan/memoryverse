@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/i18n/client";
 
 export default function DeleteButton({
   id,
@@ -15,6 +16,7 @@ export default function DeleteButton({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -44,16 +46,16 @@ export default function DeleteButton({
         onClick={() => setConfirming(true)}
       >
         <Trash2 size={compact ? 12 : 14} className="mr-1 inline" />
-        {compact ? "Delete" : "Delete capsule"}
+        {compact ? t.del.short : t.del.full}
       </button>
     );
   }
   return (
     <div className={`flex flex-wrap items-center gap-2 ${compact ? "text-xs" : "text-sm"}`}>
-      {error && <span className="text-red-300">Delete failed.</span>}
-      <span className="text-white/60">Delete forever?</span>
+      {error && <span className="text-red-300">{t.del.failed}</span>}
+      <span className="text-white/60">{t.del.confirm}</span>
       <button type="button" className="btn-ghost px-2! py-1!" onClick={() => setConfirming(false)} disabled={busy}>
-        Cancel
+        {t.common.cancel}
       </button>
       <button
         type="button"
@@ -61,7 +63,7 @@ export default function DeleteButton({
         onClick={remove}
         disabled={busy}
       >
-        {busy ? "Deleting…" : "Yes, delete"}
+        {busy ? t.del.deleting : t.del.yes}
       </button>
     </div>
   );

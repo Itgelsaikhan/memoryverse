@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { getI18n } from "@/i18n/server";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { t } = await getI18n();
   return (
     <div className="mx-auto max-w-md px-4 py-24 text-center">
       <p className="text-5xl">🌠</p>
-      <h1 className="mt-4 text-2xl font-bold">Lost in space</h1>
-      <p className="mt-2 text-white/60">This capsule doesn&apos;t exist, or it is still sealed.</p>
+      <h1 className="mt-4 text-2xl font-bold">{t.notFound.title}</h1>
+      <p className="mt-2 text-white/60">{t.notFound.text}</p>
       <Link href="/" className="btn-primary mt-6">
-        Back home
+        {t.common.backHome}
       </Link>
     </div>
   );

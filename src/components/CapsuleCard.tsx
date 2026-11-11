@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/i18n/client";
 import { Lock, MapPin, Mic, Video } from "lucide-react";
 import { type Capsule, formatDay, emotionOf, isAudio, isImage, isVideo } from "@/lib/capsules";
 import { Countdown, LocalDate } from "@/components/LocalTime";
 import DeleteButton from "@/components/DeleteButton";
 
 export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: string }) {
+  const { t, locale } = useI18n();
   const emotion = emotionOf(capsule.emotion);
 
   if (capsule.is_sealed) {
@@ -15,7 +19,7 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
         <h3 className="mt-3 font-semibold">{capsule.title}</h3>
         <p className="text-future mt-1 text-sm font-medium"><Countdown iso={capsule.unlock_at!} /></p>
         <p className="mt-3 text-xs text-white/40">
-          Sealed <LocalDate iso={capsule.created_at} /> · opens <LocalDate iso={capsule.unlock_at} />
+          {t.card.sealed} <LocalDate iso={capsule.created_at} /> · {t.card.opens} <LocalDate iso={capsule.unlock_at} />
         </p>
         <div className="mt-3">
           <DeleteButton id={capsule.id} compact />
@@ -35,13 +39,13 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
       )}
       <div className="p-5">
         <div className="flex items-center justify-between text-xs text-white/50">
-          <span>{capsule.memory_date ? formatDay(capsule.memory_date) : <LocalDate iso={capsule.created_at} />}</span>
+          <span>{capsule.memory_date ? formatDay(capsule.memory_date, locale) : <LocalDate iso={capsule.created_at} />}</span>
           {emotion && (
             <span
               className="rounded-full px-2 py-0.5"
               style={{ background: `${emotion.color}22`, color: emotion.color }}
             >
-              {emotion.emoji} {emotion.label}
+              {emotion.emoji} {t.emotions[emotion.id]}
             </span>
           )}
         </div>
@@ -55,15 +59,15 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
           )}
           {isAudio(capsule.media_path) && (
             <span className="inline-flex items-center gap-1">
-              <Mic size={12} /> Voice
+              <Mic size={12} /> {t.card.voice}
             </span>
           )}
           {isVideo(capsule.media_path) && (
             <span className="inline-flex items-center gap-1">
-              <Video size={12} /> Video
+              <Video size={12} /> {t.card.video}
             </span>
           )}
-          {capsule.kind === "future" && <span className="text-cyan-mv">Opened capsule</span>}
+          {capsule.kind === "future" && <span className="text-cyan-mv">{t.card.openedCapsule}</span>}
         </div>
       </div>
     </Link>

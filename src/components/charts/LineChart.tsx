@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { niceTicks } from "@/lib/chart";
+import { useI18n } from "@/i18n/client";
 
 export type LineSeries = {
   id: string;
@@ -25,6 +26,7 @@ export default function LineChart({
   format: (v: number) => string;
   ariaLabel: string;
 }) {
+  const { t } = useI18n();
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [showTable, setShowTable] = useState(false);
@@ -33,7 +35,7 @@ export default function LineChart({
   const xs = [...new Set(all.map((p) => p.x))].sort((a, b) => a - b);
 
   if (all.length === 0) {
-    return <p className="py-16 text-center text-sm text-white/50">No data for this selection.</p>;
+    return <p className="py-16 text-center text-sm text-white/50">{t.common.noDataSelection}</p>;
   }
 
   const xMin = Math.min(...xs);
@@ -94,7 +96,7 @@ export default function LineChart({
           </span>
         ))}
         <button className="ml-auto text-white/50 underline-offset-2 hover:underline" onClick={() => setShowTable((v) => !v)}>
-          {showTable ? "Show chart" : "Show table"}
+          {showTable ? t.common.showChart : t.common.showTable}
         </button>
       </div>
 
@@ -103,7 +105,7 @@ export default function LineChart({
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0 bg-space-900 text-white/60">
               <tr>
-                <th className="px-3 py-2">Year</th>
+                <th className="px-3 py-2">{t.charts.year}</th>
                 {series.map((s) => (
                   <th key={s.id} className="px-3 py-2">
                     {s.label}

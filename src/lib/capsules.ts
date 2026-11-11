@@ -1,3 +1,5 @@
+import { INTL_LOCALE, type Locale } from "@/i18n/config";
+
 export type CapsuleKind = "memory" | "future";
 
 export type Capsule = {
@@ -33,9 +35,9 @@ export function emotionOf(id: string | null) {
 }
 
 /** Formats a date-only value like "2024-07-15" without time-zone shifting. */
-export function formatDay(ymd: string) {
+export function formatDay(ymd: string, locale: Locale = "en") {
   const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(INTL_LOCALE[locale], {
     year: "numeric",
     month: "short",
     day: "numeric",

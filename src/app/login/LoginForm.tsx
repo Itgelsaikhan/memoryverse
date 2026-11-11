@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { useI18n } from "@/i18n/client";
 
 export default function LoginForm() {
   const params = useSearchParams();
   const router = useRouter();
+  const { t } = useI18n();
   const [mode, setMode] = useState<"login" | "signup">(
     params.get("mode") === "signup" ? "signup" : "login",
   );
@@ -25,7 +27,7 @@ export default function LoginForm() {
     setError(null);
     setInfo(null);
     if (!isSupabaseConfigured) {
-      setError("The app is not connected to Supabase yet.");
+      setError(t.auth.notConfigured);
       return;
     }
     setLoading(true);
@@ -44,7 +46,7 @@ export default function LoginForm() {
           router.push(safeNext);
           router.refresh();
         } else {
-          setInfo("Check your inbox and click the confirmation link to activate your account.");
+          setInfo(t.auth.checkInbox);
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -53,7 +55,7 @@ export default function LoginForm() {
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : t.auth.genericError);
     } finally {
       setLoading(false);
     }
@@ -62,17 +64,15 @@ export default function LoginForm() {
   return (
     <div className="glass p-8">
       <h1 className="text-2xl font-bold">
-        {mode === "signup" ? "Create your universe" : "Welcome back"}
+        {mode === "signup" ? t.auth.signupTitle : t.auth.loginTitle}
       </h1>
       <p className="mt-1 text-sm text-white/60">
-        {mode === "signup"
-          ? "Free forever for your first 50 capsules."
-          : "Log in to open your Memory Vault."}
+        {mode === "signup" ? t.auth.signupSub : t.auth.loginSub}
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <label className="block text-sm">
-          <span className="mb-1 block text-white/70">Email</span>
+          <span className="mb-1 block text-white/70">{t.auth.email}</span>
           <input
             className="input"
             type="email"
@@ -83,7 +83,7 @@ export default function LoginForm() {
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-white/70">Password</span>
+          <span className="mb-1 block text-white/70">{t.auth.password}</span>
           <input
             className="input"
             type="password"
@@ -99,12 +99,12 @@ export default function LoginForm() {
         {info && <p className="rounded-lg bg-emerald-500/15 p-3 text-sm text-emerald-300">{info}</p>}
 
         <button className="btn-primary w-full justify-center" disabled={loading}>
-          {loading ? "Please wait…" : mode === "signup" ? "Create account" : "Log in"}
+          {loading ? t.auth.wait : mode === "signup" ? t.auth.createAccount : t.auth.login}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-white/60">
-        {mode === "signup" ? "Already have an account?" : "New to MemoryVerse?"}{" "}
+        {mode === "signup" ? t.auth.haveAccount : t.auth.newHere}{" "}
         <button
           type="button"
           className="text-cyan-mv hover:underline"
@@ -114,7 +114,7 @@ export default function LoginForm() {
             setInfo(null);
           }}
         >
-          {mode === "signup" ? "Log in" : "Create an account"}
+          {mode === "signup" ? t.auth.switchToLogin : t.auth.switchToSignup}
         </button>
       </p>
     </div>

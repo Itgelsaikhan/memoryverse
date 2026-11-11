@@ -26,9 +26,9 @@ export const TOPIC_LABELS: Record<string, string> = {
   exercise: "Exercise",
 };
 
-export function topicLabel(t: string | null | undefined) {
+export function topicLabel(t: string | null | undefined, labels: Record<string, string> = TOPIC_LABELS) {
   if (!t) return "—";
-  return TOPIC_LABELS[t] ?? t.charAt(0).toUpperCase() + t.slice(1);
+  return labels[t] ?? t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 /** Below this many moments a country's numbers are shown as a small sample. */
