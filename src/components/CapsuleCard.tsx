@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Lock, MapPin, Mic, Video } from "lucide-react";
 import { type Capsule, formatDay, emotionOf, isAudio, isImage, isVideo } from "@/lib/capsules";
 import { Countdown, LocalDate } from "@/components/LocalTime";
+import DeleteButton from "@/components/DeleteButton";
 
 export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: string }) {
   const emotion = emotionOf(capsule.emotion);
@@ -16,6 +17,9 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
         <p className="mt-3 text-xs text-white/40">
           Sealed <LocalDate iso={capsule.created_at} /> · opens <LocalDate iso={capsule.unlock_at} />
         </p>
+        <div className="mt-3">
+          <DeleteButton id={capsule.id} compact />
+        </div>
       </div>
     );
   }

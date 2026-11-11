@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { emotionOf, formatDay, isAudio, isImage, isVideo } from "@/lib/capsules";
 import { LocalDate } from "@/components/LocalTime";
 import EpilogueForm from "./EpilogueForm";
-import DeleteButton from "./DeleteButton";
+import DeleteButton from "@/components/DeleteButton";
 
 export default function CapsulePage({ params }: PageProps<"/capsule/[id]">) {
   return (
@@ -88,7 +88,7 @@ async function CapsuleContent({ params }: { params: Promise<{ id: string }> }) {
       </div>
 
       <div className="mt-8 flex justify-end">
-        <DeleteButton id={capsule.id} mediaPath={capsule.media_path} redirectTo={isFuture ? "/future" : "/vault"} />
+        <DeleteButton id={capsule.id} redirectTo={isFuture ? "/future" : "/vault"} />
       </div>
     </div>
   );
