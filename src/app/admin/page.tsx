@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PageSkeleton from "@/components/PageSkeleton";
 import AdminPanel, { type IndicatorMeta } from "./AdminPanel";
+import AdminLegacy from "./AdminLegacy";
 
 export const metadata = { title: "Admin · MemoryVerse" };
 
@@ -24,9 +25,12 @@ async function AdminContent() {
     supabase.from("indicators").select("code, min_year, max_year, updated_at"),
   ]);
   return (
-    <AdminPanel
-      initialCounts={(counts ?? []) as { source: string; n: number }[]}
-      initialIndicators={(indicators ?? []) as IndicatorMeta[]}
-    />
+    <>
+      <AdminPanel
+        initialCounts={(counts ?? []) as { source: string; n: number }[]}
+        initialIndicators={(indicators ?? []) as IndicatorMeta[]}
+      />
+      <AdminLegacy />
+    </>
   );
 }

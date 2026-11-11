@@ -19,6 +19,13 @@ Save your memories, seal letters to your future self, and see how humanity's dre
   age" from HappyDB, and a personal emotion breakdown. Hand-built SVG charts with hover tooltips and table views;
   series colors validated for color-vision deficiency
 
+- **Plans & billing** (week 4) — Free / Premium / Legacy. Prices and plan limits live in the database
+  (`plan_price_cents()`, `enforce_capsule_limit()` trigger: 50 capsules, 5-year seal and no video on Free). Checkout
+  uses a clearly labelled *demo* provider — no money is charged — and is built so Stripe or QPay can replace it
+- **Legacy** — up to 5 trusted contacts; a daily inactivity check creates private, expiring delivery links to the
+  owner's opened memories (sealed capsules are never shared); owners can preview exactly what contacts will see
+- **Year in Review** — personal yearly report (Premium)
+
 ## Data sources
 - HappyDB — Asai, A., Evensen, S., Golshan, B., Halevy, A., Li, V., Lopatenko, A., Stepanov, D., Suhara, Y., Tan, W.-C., Xu, Y. (2018). *HappyDB: A Corpus of 100,000 Crowdsourced Happy Moments.* LREC 2018. Emotions are derived from HappyDB's categories plus keyword rules.
 - Survey indicators — World Happiness Report and World Values Survey, via Our World in Data (CC BY 4.0)

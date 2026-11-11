@@ -8,6 +8,7 @@ const NAV = [
   { href: "/future", label: "Future" },
   { href: "/map", label: "Humanity Map" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export function HeaderFallback() {
@@ -20,6 +21,8 @@ export default async function Header() {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
     email = data.user?.email ?? null;
+    // Legacy relies on knowing when the user was last active (the database writes at most once per hour)
+    if (data.user) await supabase.rpc("touch_last_seen");
   }
   return <HeaderView email={email} />;
 }
@@ -48,7 +51,12 @@ function HeaderView({ email, pending = false }: { email: string | null; pending?
             <span className="h-9 w-24 animate-pulse rounded-xl bg-white/5" />
           ) : email ? (
             <>
-              <span className="hidden text-white/50 sm:inline">{email}</span>
+              <Link href="/account" className="hidden text-white/60 hover:text-white sm:inline">
+                {email}
+              </Link>
+              <Link href="/account" className="text-white/70 hover:text-white sm:hidden">
+                Account
+              </Link>
               <form action="/auth/signout" method="post">
                 <button className="btn-ghost text-sm">Log out</button>
               </form>

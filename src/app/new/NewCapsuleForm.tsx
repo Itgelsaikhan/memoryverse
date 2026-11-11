@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Archive, Hourglass, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EMOTIONS, localYMD, type CapsuleKind } from "@/lib/capsules";
 import { COUNTRIES } from "@/lib/countries";
+import { planDef, planErrorMessage, type MyPlan } from "@/lib/plans";
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPT = "image/*,audio/*,video/mp4,video/quicktime";
@@ -33,6 +35,18 @@ export default function NewCapsuleForm() {
   const [today] = useState(() => localYMD(new Date()));
   const [tomorrow] = useState(() => localYMD(new Date(Date.now() + 86_400_000)));
   const [saving, setSaving] = useState(false);
+  const [plan, setPlan] = useState<MyPlan | null>(null);
+
+  useEffect(() => {
+    createClient()
+      .rpc("my_plan")
+      .maybeSingle()
+      .then(({ data }) => setPlan((data as MyPlan | null) ?? null));
+  }, []);
+  const effective = plan?.effective_plan ?? "free";
+  const maxYears = planDef(effective).maxUnlockYears;
+  // Latest allowed opening date for the user's plan (pure string math on today's date)
+  const maxUnlock = `${Number(today.slice(0, 4)) + maxYears}${today.slice(4)}`;
   const [error, setError] = useState<string | null>(null);
 
   const preview = useMemo(
@@ -45,6 +59,10 @@ export default function NewCapsuleForm() {
     if (!f) return;
     if (f.size > MAX_BYTES) {
       setError("File is too large (max 50 MB).");
+      return;
+    }
+    if (f.type.startsWith("video/") && effective === "free") {
+      setError("Video capsules are a Premium feature.");
       return;
     }
     setFile(f);
@@ -94,10 +112,7 @@ export default function NewCapsuleForm() {
       });
       if (insErr) {
         if (media_path) await supabase.storage.from("media").remove([media_path]);
-        if (insErr.message.includes("FREE_LIMIT_REACHED")) {
-          throw new Error("You've reached the 50-capsule limit of the Free plan.");
-        }
-        throw insErr;
+        throw new Error(planErrorMessage(insErr.message) ?? insErr.message);
       }
 
       router.push(kind === "future" ? "/future" : "/vault");
@@ -194,7 +209,7 @@ export default function NewCapsuleForm() {
               }}
             >
               <Upload size={22} />
-              Drop a file here or click to choose (max 50 MB)
+              Drop a file here or click to choose (max 50 MB{effective === "free" ? ", video on Premium" : ""})
               <input
                 type="file"
                 accept={ACCEPT}
@@ -245,11 +260,12 @@ export default function NewCapsuleForm() {
                 type="date"
                 required
                 min={tomorrow}
+                max={maxUnlock}
                 value={unlockDate}
                 onChange={(e) => setUnlockDate(e.target.value)}
               />
               <span className="mt-2 flex gap-2 text-xs">
-                {[1, 3, 5].map((y) => (
+                {(effective === "free" ? [1, 3, 5] : [1, 5, 10, 25]).map((y) => (
                   <button
                     type="button"
                     key={y}
@@ -319,7 +335,19 @@ export default function NewCapsuleForm() {
         )}
       </div>
 
-      {error && <p className="rounded-lg bg-red-500/15 p-3 text-sm text-red-300">{error}</p>}
+      {error && (
+        <p className="rounded-lg bg-red-500/15 p-3 text-sm text-red-300">
+          {error}
+          {effective === "free" && /Premium|Free plan|5 years/.test(error) && (
+            <>
+              {" "}
+              <Link href="/pricing" className="underline">
+                See plans
+              </Link>
+            </>
+          )}
+        </p>
+      )}
 
       <button className="btn-primary w-full justify-center" disabled={saving}>
         {saving ? "Saving…" : kind === "future" ? "Seal capsule 🔒" : "Save memory"}
