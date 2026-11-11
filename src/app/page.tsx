@@ -1,69 +1,113 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Archive, BarChart3, Globe2, Hourglass, Lock, ArrowRight } from "lucide-react";
+
+const FEATURES = [
+  {
+    icon: Archive,
+    title: "Memory Vault",
+    text: "Photos, voice notes, videos and letters — your private, searchable box of memories.",
+    href: "/vault",
+    accent: "text-amber-mv",
+  },
+  {
+    icon: Hourglass,
+    title: "Future Capsule",
+    text: "Seal a letter and your predictions. Not even you can open it until the day arrives.",
+    href: "/future",
+    accent: "text-cyan-mv",
+  },
+  {
+    icon: Globe2,
+    title: "Humanity Map",
+    text: "Anonymous memories and dreams from around the world, mapped by emotion.",
+    href: "/map",
+    accent: "text-violet-mv",
+  },
+  {
+    icon: BarChart3,
+    title: "Time Analytics",
+    text: "See how people's values and dreams shift across years and countries.",
+    href: "/analytics",
+    accent: "text-pink-400",
+  },
+];
+
+const ORBIT = [
+  { emoji: "📷", style: "top-[8%] left-[18%]" },
+  { emoji: "🎙️", style: "top-[22%] right-[6%]" },
+  { emoji: "✉️", style: "bottom-[14%] left-[6%]" },
+  { emoji: "🌅", style: "bottom-[6%] right-[22%]" },
+  { emoji: "✨", style: "top-[50%] -left-[2%]" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="mx-auto max-w-6xl px-4">
+      <section className="grid items-center gap-12 py-16 md:grid-cols-2 md:py-24">
+        <div>
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
+            <Lock size={12} /> Private by default · Time-locked by design
           </p>
+          <h1 className="text-4xl leading-tight font-bold tracking-tight md:text-6xl">
+            Every memory is a star.
+            <br />
+            <span className="text-future">Every dream is a future.</span>
+          </h1>
+          <p className="mt-6 max-w-lg text-lg text-white/65">
+            Save your memories, seal letters to your future self, and see how humanity&apos;s
+            dreams change over time.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/new" className="btn-primary">
+              Create your first capsule <ArrowRight size={16} />
+            </Link>
+            <Link href="/map" className="btn-ghost">
+              Explore the Humanity Map
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="relative mx-auto aspect-square w-full max-w-md">
+          <div className="absolute inset-[18%] rounded-full bg-gradient-to-br from-violet-mv/50 via-cyan-mv/20 to-amber-mv/30 blur-2xl" />
+          <div className="glass absolute inset-[24%] grid place-items-center rounded-full! shadow-[0_0_80px_rgba(139,92,246,0.35)]">
+            <Hourglass size={64} className="text-white/80" />
+          </div>
+          <div className="absolute inset-[6%] rounded-full border border-dashed border-white/10" />
+          {ORBIT.map((o) => (
+            <span
+              key={o.style}
+              className={`glass absolute grid h-14 w-14 place-items-center text-2xl ${o.style}`}
+            >
+              {o.emoji}
+            </span>
+          ))}
         </div>
-      </main>
+      </section>
+
+      <section className="grid gap-4 pb-16 sm:grid-cols-2 lg:grid-cols-4">
+        {FEATURES.map((f) => (
+          <Link key={f.title} href={f.href} className="glass p-6 transition hover:bg-white/[0.07]">
+            <f.icon className={f.accent} size={28} />
+            <h3 className="mt-4 font-semibold">{f.title}</h3>
+            <p className="mt-2 text-sm text-white/60">{f.text}</p>
+          </Link>
+        ))}
+      </section>
+
+      <section className="glass mb-20 grid gap-6 p-8 text-center sm:grid-cols-3">
+        <div>
+          <div className="text-3xl font-bold text-amber-mv">1</div>
+          <div className="mt-1 text-sm text-white/60">Write or record a memory</div>
+        </div>
+        <div>
+          <div className="text-3xl font-bold text-violet-mv">2</div>
+          <div className="mt-1 text-sm text-white/60">Choose when it opens — or keep it forever</div>
+        </div>
+        <div>
+          <div className="text-3xl font-bold text-cyan-mv">3</div>
+          <div className="mt-1 text-sm text-white/60">Meet your past self and see what changed</div>
+        </div>
+      </section>
     </div>
   );
 }

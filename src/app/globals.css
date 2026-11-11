@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-space-950: #070a1c;
+  --color-space-900: #0b1026;
+  --color-space-800: #141a3a;
+  --color-amber-mv: #f5b544;
+  --color-violet-mv: #8b5cf6;
+  --color-cyan-mv: #22d3ee;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-space-950);
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(34, 211, 238, 0.1), transparent 60%),
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 85% 25%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 10% 70%, rgba(255, 255, 255, 0.4), transparent);
+  background-attachment: fixed;
+  color: #e6e8f2;
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(14px);
+    border-radius: 1rem;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--color-amber-mv);
+    color: #1a1204;
+    font-weight: 600;
+    padding: 0.65rem 1.1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(245, 181, 68, 0.3);
+  }
+  .btn-primary:disabled {
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.6rem 1rem;
+    transition: background 0.15s;
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .input {
+    width: 100%;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.65rem 0.85rem;
+    outline: none;
+  }
+  .input:focus {
+    border-color: var(--color-violet-mv);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  }
+  .future-gradient {
+    background: linear-gradient(135deg, var(--color-violet-mv), var(--color-cyan-mv));
+  }
+  .text-future {
+    background: linear-gradient(135deg, #a78bfa, #22d3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
