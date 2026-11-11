@@ -347,6 +347,7 @@ const mn: Dictionary = {
     amount: "Дүн",
     status: "Төлөв",
     demo: "demo",
+    statuses: { succeeded: "Төлөгдсөн", failed: "Амжилтгүй", refunded: "Буцаагдсан" },
     yearly: "жилээр",
     monthly: "сараар",
   },

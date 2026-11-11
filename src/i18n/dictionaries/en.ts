@@ -340,6 +340,7 @@ const en = {
     amount: "Amount",
     status: "Status",
     demo: "demo",
+    statuses: { succeeded: "Paid", failed: "Failed", refunded: "Refunded" } as Record<string, string>,
     yearly: "yearly",
     monthly: "monthly",
   },

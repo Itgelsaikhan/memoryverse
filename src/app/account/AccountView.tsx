@@ -267,7 +267,7 @@ export default function AccountView({
                   <td>{planName(p.plan)} · {p.period === "year" ? tc.yearly : tc.monthly}</td>
                   <td>{formatPrice(p.amount_cents)} {p.currency}</td>
                   <td>
-                    {p.status}
+                    {tc.statuses[p.status] ?? p.status}
                     {p.provider === "demo" && <span className="ml-1 rounded bg-white/10 px-1.5 text-xs text-white/60">{tc.demo}</span>}
                   </td>
                 </tr>
