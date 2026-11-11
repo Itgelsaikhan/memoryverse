@@ -55,6 +55,14 @@ async function LegacyContent({ params }: { params: Promise<{ token: string }> })
         </p>
       </div>
 
+      {view.capsules.length === 0 && (
+        <p className="glass mt-8 p-6 text-center text-sm text-white/55">
+          {view.kind === "preview"
+            ? "Nothing to share yet — memories appear here once you save them. Sealed future capsules are never shared."
+            : "There are no memories to show here."}
+        </p>
+      )}
+
       <ol className="relative mt-10 space-y-6 border-l border-white/10 pl-6">
         {view.capsules.map((c, i) => {
           const em = emotionOf(c.emotion);
