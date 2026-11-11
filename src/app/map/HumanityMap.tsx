@@ -193,7 +193,11 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
       )}
 
       {/* Left panel: totals, filter, search */}
-      <aside className="glass absolute top-4 left-4 z-10 max-h-[calc(100%-2rem)] w-[min(340px,calc(100%-2rem))] overflow-y-auto p-5">
+      <aside
+        className={`glass absolute top-2 left-2 z-10 max-h-[calc(100%-1rem)] w-[min(340px,calc(100%-1rem))] overflow-y-auto p-4 md:top-4 md:left-4 md:max-h-[calc(100%-2rem)] md:p-5 ${
+          selected ? "hidden md:block" : ""
+        }`}
+      >
         <h1 className="text-xl font-bold">Humanity Map</h1>
         <p className="mt-1 text-sm text-white/60">
           {totals.all.toLocaleString()} moments from {stats.length} countries
@@ -280,7 +284,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
 
       {/* Right panel: selected country */}
       {selected && (
-        <aside className="glass absolute top-4 right-4 z-10 max-h-[calc(100%-2rem)] w-[min(360px,calc(100%-2rem))] overflow-y-auto p-5">
+        <aside className="glass absolute inset-x-2 bottom-2 z-10 max-h-[60%] overflow-y-auto p-4 md:inset-x-auto md:top-4 md:right-4 md:bottom-auto md:max-h-[calc(100%-2rem)] md:w-[360px] md:p-5">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-xl font-bold">{countryName(selected)}</h2>
