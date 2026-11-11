@@ -33,9 +33,9 @@ export default function PricingPage() {
                   {p.id === "free" ? " forever" : p.prices.month ? " / month" : " / year"}
                 </span>
               </p>
-              {Boolean(p.prices.month && p.prices.year) && (
+              {p.prices.month && p.prices.year ? (
                 <p className="mt-1 text-xs text-white/50">or {formatPrice(p.prices.year)} / year (2 months free)</p>
-              )}
+              ) : null}
               <ul className="mt-6 flex-1 space-y-2 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2">

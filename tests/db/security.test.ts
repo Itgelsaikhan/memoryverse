@@ -45,7 +45,10 @@ beforeAll(async () => {
   `);
   const dir = path.resolve(__dirname, "../../supabase/migrations");
   for (const f of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
-    await db.exec(readFileSync(path.join(dir, f), "utf8"));
+    const sql = readFileSync(path.join(dir, f), "utf8");
+    // pg_cron (job scheduling) only exists on the real server; the logic it calls is tested directly below
+    if (sql.includes("pg_cron")) continue;
+    await db.exec(sql);
   }
   await db.exec(`
     insert into auth.users values ('${A}', 'a@test'), ('${B}', 'b@test'), ('${C}', 'c@test');
