@@ -31,6 +31,15 @@ Save your memories, seal letters to your future self, and see how humanity's dre
 - Survey indicators — World Happiness Report and World Values Survey, via Our World in Data (CC BY 4.0)
 - Country shapes — Natural Earth (public domain)
 
+## Quality
+```bash
+npm run lint        # ESLint
+npm run typecheck   # TypeScript
+npm test            # 36 tests: unit + database security (all migrations run in embedded Postgres)
+```
+The database suite signs in as different users and checks Row Level Security, sealed-capsule privacy,
+plan limits, payment forgery, admin-only imports and Legacy rules. GitHub Actions runs everything on each push.
+
 ## Run locally
 ```bash
 npm install
