@@ -62,10 +62,13 @@ describe("localized formatting", () => {
     expect(countryName("MNG", "en")).toBe("Mongolia");
     expect(countryName("XXX", "mn")).toBe("XXX");
     expect(countryList("mn").length).toBe(countryList("en").length);
+    // stored data, not Intl — must work in browsers without Mongolian locale data
+    expect(countryList("mn").every(([, name]) => /[А-Яа-яЁёӨөҮү]/.test(name))).toBe(true);
   });
-  it("dates in Mongolian", () => {
-    expect(formatDay("2024-07-15", "mn")).toContain("2024");
-    expect(formatDay("2024-07-15", "mn")).not.toContain("Jul");
+  it("dates in Mongolian without relying on browser locale data", () => {
+    expect(formatDay("2024-07-15", "mn")).toBe("2024 оны 7-р сарын 15");
+    expect(formatDay("2024-01-01", "mn")).toBe("2024 оны 1-р сарын 1");
+    expect(formatDay("2024-07-15", "en")).toBe("Jul 15, 2024");
   });
   it("database errors in Mongolian", () => {
     expect(planErrorMessage("PLAN_VIDEO", mn)).toBe(mn.planErrors.video);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { INTL_LOCALE } from "@/i18n/config";
+import { formatDate } from "@/i18n/format";
 import { useI18n } from "@/i18n/client";
 import en, { type Dictionary } from "@/i18n/dictionaries/en";
 
@@ -19,7 +19,7 @@ export function LocalDate({ iso }: { iso: string | null }) {
   if (!isClient) return <span className="inline-block min-w-20 opacity-0">…</span>;
   return (
     <time dateTime={iso}>
-      {new Date(iso).toLocaleDateString(INTL_LOCALE[locale], { year: "numeric", month: "short", day: "numeric" })}
+      {formatDate(new Date(iso), locale)}
     </time>
   );
 }

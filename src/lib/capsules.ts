@@ -1,4 +1,5 @@
-import { INTL_LOCALE, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
+import { formatDate } from "@/i18n/format";
 
 export type CapsuleKind = "memory" | "future";
 
@@ -37,12 +38,7 @@ export function emotionOf(id: string | null) {
 /** Formats a date-only value like "2024-07-15" without time-zone shifting. */
 export function formatDay(ymd: string, locale: Locale = "en") {
   const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(INTL_LOCALE[locale], {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+  return formatDate(new Date(Date.UTC(y, m - 1, d)), locale, true);
 }
 
 /** YYYY-MM-DD in the browser's local time zone. */

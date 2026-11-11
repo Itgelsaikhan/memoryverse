@@ -367,6 +367,8 @@ const en = {
     mainFeeling: "Main feeling",
     byMonth: "Memories by month",
     months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    monthName: (i: number) =>
+      ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][i],
     monthAria: (y: number) => `Memories per month in ${y}`,
     monthTitle: (m: string, n: number) => `${m}: ${plural(n, "memory", "memories")}`,
     emotions: "Your emotions",

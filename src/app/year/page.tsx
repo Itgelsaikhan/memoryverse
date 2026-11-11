@@ -105,7 +105,7 @@ async function YearContent({ searchParams }: { searchParams: Promise<Record<stri
             </div>
             <div className="glass p-5">
               <p className="text-xs text-white/50">{ty.activeMonth}</p>
-              <p className="mt-1 text-4xl font-bold">{MONTHS[topMonth]}</p>
+              <p className="mt-1 text-4xl font-bold">{ty.monthName(topMonth)}</p>
             </div>
             <div className="glass p-5">
               <p className="text-xs text-white/50">{ty.mainFeeling}</p>
