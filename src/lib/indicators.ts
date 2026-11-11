@@ -111,3 +111,10 @@ export function owidCsvToRows(text: string): [string, number, number][] {
   }
   return out;
 }
+
+/** A difference between two values: percentage shares change in percentage points. */
+export function formatChange(def: IndicatorDef | undefined, delta: number) {
+  const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
+  const abs = Math.abs(delta).toFixed(def?.decimals ?? 2);
+  return `${sign}${abs}${def?.suffix === "%" ? " pp" : ""}`;
+}

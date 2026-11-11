@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import LineChart, { type LineSeries } from "@/components/charts/LineChart";
 import StackedBars from "@/components/charts/StackedBars";
 import { COUNTRIES, countryName } from "@/lib/countries";
-import { INDICATORS, formatValue, indicatorDef } from "@/lib/indicators";
+import { INDICATORS, formatChange, formatValue, indicatorDef } from "@/lib/indicators";
 import { NEUTRAL, SERIES, TOPIC_ORDER } from "@/lib/palette";
 import { topicLabel } from "@/lib/stats";
 import { EMOTIONS } from "@/lib/capsules";
@@ -237,7 +237,9 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                   <h3 className="flex items-center gap-2 font-semibold">
                     {block.up ? <ArrowUp size={16} /> : <ArrowDown size={16} />} {block.title}
                   </h3>
-                  <p className="text-xs text-white/45">First vs latest survey, at least 8 years apart</p>
+                  <p className="text-xs text-white/45">
+                    First vs latest survey, at least 8 years apart{def?.suffix === "%" ? " · pp = percentage points" : ""}
+                  </p>
                   <ul className="mt-4 space-y-3">
                     {block.list.length === 0 && <li className="text-sm text-white/40">No data</li>}
                     {block.list.map((c) => (
@@ -254,8 +256,7 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                           <div className="flex justify-between text-sm">
                             <span>{countryName(c.country)}</span>
                             <span className="font-medium">
-                              {c.change > 0 ? "+" : "−"}
-                              {formatValue(def, Math.abs(c.change))}
+                              {formatChange(def, c.change)}
                             </span>
                           </div>
                           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
