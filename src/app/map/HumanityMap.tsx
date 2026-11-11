@@ -60,6 +60,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const byCountry = useMemo(() => new Map(stats.map((s) => [s.country, s])), [stats]);
   const totals = useMemo(() => {
@@ -82,9 +83,13 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
         sources: {},
         layers: [{ id: "bg", type: "background", paint: { "background-color": "#070a1c" } }],
       },
-      center: [20, 25],
-      zoom: 1.3,
-      minZoom: 0.8,
+      // Fit the inhabited world to whatever screen size we have (phone or desktop)
+      bounds: [
+        [-165, -50],
+        [180, 72],
+      ],
+      fitBoundsOptions: { padding: 10 },
+      minZoom: 0,
       maxZoom: 6,
       attributionControl: false,
       renderWorldCopies: false,
@@ -182,7 +187,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
   const sel = selected ? byCountry.get(selected) : undefined;
 
   return (
-    <div className="relative h-[calc(100vh-4rem)] min-h-[560px] w-full overflow-hidden">
+    <div className="relative h-[calc(100dvh-6.25rem)] min-h-[480px] w-full overflow-hidden md:h-[calc(100vh-4rem)] md:min-h-[560px]">
       {/* maplibre's CSS sets position:relative on the map element, so it lives inside an absolute wrapper */}
       <div className="absolute inset-0">
         <div ref={container} className="h-full w-full" aria-label="World map of shared moments" />
@@ -198,10 +203,22 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
           selected ? "hidden md:block" : ""
         }`}
       >
-        <h1 className="text-xl font-bold">Humanity Map</h1>
-        <p className="mt-1 text-sm text-white/60">
-          {totals.all.toLocaleString()} moments from {stats.length} countries
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold">Humanity Map</h1>
+            <p className="mt-1 text-sm text-white/60">
+              {totals.all.toLocaleString()} moments from {stats.length} countries
+            </p>
+          </div>
+          <button
+            className="btn-ghost px-3! py-1! text-xs md:hidden"
+            onClick={() => setShowFilters((v) => !v)}
+            aria-expanded={showFilters}
+          >
+            {showFilters ? "Hide" : "Filters"}
+          </button>
+        </div>
+        <div className={showFilters ? "block" : "hidden md:block"}>
 
         {stats.length === 0 && (
           <p className="mt-4 rounded-lg bg-white/5 p-3 text-sm text-white/60">
@@ -280,6 +297,7 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
             ))}
           </div>
         )}
+        </div>
       </aside>
 
       {/* Right panel: selected country */}
