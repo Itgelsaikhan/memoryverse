@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { Lock, MapPin, Mic, Video } from "lucide-react";
-import {
-  type Capsule,
-  emotionOf,
-  formatDate,
-  isAudio,
-  isImage,
-  isVideo,
-  timeUntil,
-} from "@/lib/capsules";
+import { type Capsule, formatDay, emotionOf, isAudio, isImage, isVideo } from "@/lib/capsules";
+import { Countdown, LocalDate } from "@/components/LocalTime";
 
 export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: string }) {
   const emotion = emotionOf(capsule.emotion);
@@ -19,9 +12,9 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
         <div className="future-gradient absolute -top-10 -right-10 h-28 w-28 rounded-full opacity-30 blur-2xl" />
         <Lock className="text-cyan-mv" size={22} />
         <h3 className="mt-3 font-semibold">{capsule.title}</h3>
-        <p className="text-future mt-1 text-sm font-medium">{timeUntil(capsule.unlock_at!)}</p>
+        <p className="text-future mt-1 text-sm font-medium"><Countdown iso={capsule.unlock_at!} /></p>
         <p className="mt-3 text-xs text-white/40">
-          Sealed {formatDate(capsule.created_at)} · opens {formatDate(capsule.unlock_at)}
+          Sealed <LocalDate iso={capsule.created_at} /> · opens <LocalDate iso={capsule.unlock_at} />
         </p>
       </div>
     );
@@ -38,7 +31,7 @@ export default function CapsuleCard({ capsule, url }: { capsule: Capsule; url?: 
       )}
       <div className="p-5">
         <div className="flex items-center justify-between text-xs text-white/50">
-          <span>{formatDate(capsule.memory_date ?? capsule.created_at)}</span>
+          <span>{capsule.memory_date ? formatDay(capsule.memory_date) : <LocalDate iso={capsule.created_at} />}</span>
           {emotion && (
             <span
               className="rounded-full px-2 py-0.5"

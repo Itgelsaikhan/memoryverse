@@ -4,7 +4,7 @@ import PageSkeleton from "@/components/PageSkeleton";
 import { Hourglass, Plus } from "lucide-react";
 import CapsuleCard from "@/components/CapsuleCard";
 import { getMyCapsules } from "@/lib/data";
-import { formatDate, timeUntil } from "@/lib/capsules";
+import { Countdown, LocalDate } from "@/components/LocalTime";
 
 export const metadata = { title: "Future Capsules · MemoryVerse" };
 
@@ -41,9 +41,9 @@ async function FuturePageContent() {
           <div className="future-gradient absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-25 blur-3xl" />
           <p className="text-sm text-white/50">Next to open</p>
           <h2 className="mt-1 text-2xl font-bold">{nextUp.title}</h2>
-          <p className="text-future mt-3 text-4xl font-bold">{timeUntil(nextUp.unlock_at!)}</p>
+          <p className="text-future mt-3 text-4xl font-bold"><Countdown iso={nextUp.unlock_at!} /></p>
           <p className="mt-2 text-sm text-white/50">
-            Sealed on {formatDate(nextUp.created_at)} · opens {formatDate(nextUp.unlock_at)}
+            Sealed on <LocalDate iso={nextUp.created_at} /> · opens <LocalDate iso={nextUp.unlock_at} />
           </p>
         </div>
       )}

@@ -4,7 +4,8 @@ import PageSkeleton from "@/components/PageSkeleton";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { emotionOf, formatDate, isAudio, isImage, isVideo } from "@/lib/capsules";
+import { emotionOf, formatDay, isAudio, isImage, isVideo } from "@/lib/capsules";
+import { LocalDate } from "@/components/LocalTime";
 import EpilogueForm from "./EpilogueForm";
 import DeleteButton from "./DeleteButton";
 
@@ -41,7 +42,7 @@ async function CapsuleContent({ params }: { params: Promise<{ id: string }> }) {
 
       {isFuture && (
         <div className="future-gradient mt-6 rounded-2xl p-4 text-center font-medium text-white">
-          ✨ Your capsule from {formatDate(capsule.created_at)} has opened
+          ✨ Your capsule from <LocalDate iso={capsule.created_at} /> has opened
         </div>
       )}
 
@@ -52,10 +53,10 @@ async function CapsuleContent({ params }: { params: Promise<{ id: string }> }) {
             <img src={mediaUrl} alt={capsule.title} className="max-h-[480px] w-full object-cover" />
           )}
           <div className="p-6">
-            {isFuture && <p className="text-xs tracking-widest text-amber-mv">THEN — {formatDate(capsule.created_at)}</p>}
+            {isFuture && <p className="text-xs tracking-widest text-amber-mv">THEN — <LocalDate iso={capsule.created_at} /></p>}
             <h1 className="mt-1 text-3xl font-bold">{capsule.title}</h1>
             <div className="mt-3 flex flex-wrap gap-3 text-sm text-white/55">
-              {!isFuture && <span>{formatDate(capsule.memory_date ?? capsule.created_at)}</span>}
+              {!isFuture && <span>{capsule.memory_date ? formatDay(capsule.memory_date) : <LocalDate iso={capsule.created_at} />}</span>}
               {capsule.location_name && (
                 <span className="inline-flex items-center gap-1">
                   <MapPin size={14} /> {capsule.location_name}
@@ -78,7 +79,7 @@ async function CapsuleContent({ params }: { params: Promise<{ id: string }> }) {
 
         {isFuture && (
           <section className="glass p-6">
-            <p className="text-xs tracking-widest text-cyan-mv">NOW — {formatDate(new Date().toISOString())}</p>
+            <p className="text-xs tracking-widest text-cyan-mv">NOW</p>
             <h2 className="mt-1 text-xl font-semibold">What changed since then?</h2>
             <p className="mt-1 text-sm text-white/55">Write an epilogue to your past self.</p>
             <EpilogueForm id={capsule.id} initial={capsule.epilogue ?? ""} />

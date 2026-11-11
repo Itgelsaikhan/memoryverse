@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Archive, Hourglass, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { EMOTIONS, type CapsuleKind } from "@/lib/capsules";
+import { EMOTIONS, localYMD, type CapsuleKind } from "@/lib/capsules";
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPT = "image/*,audio/*,video/mp4,video/quicktime";
@@ -12,7 +12,7 @@ const ACCEPT = "image/*,audio/*,video/mp4,video/quicktime";
 function addYears(years: number) {
   const d = new Date();
   d.setFullYear(d.getFullYear() + years);
-  return d.toISOString().slice(0, 10);
+  return localYMD(d);
 }
 
 export default function NewCapsuleForm() {
@@ -28,8 +28,8 @@ export default function NewCapsuleForm() {
   const [unlockDate, setUnlockDate] = useState(() => addYears(1));
   const [isPublic, setIsPublic] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [today] = useState(() => new Date().toISOString().slice(0, 10));
-  const [tomorrow] = useState(() => new Date(Date.now() + 86_400_000).toISOString().slice(0, 10));
+  const [today] = useState(() => localYMD(new Date()));
+  const [tomorrow] = useState(() => localYMD(new Date(Date.now() + 86_400_000)));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

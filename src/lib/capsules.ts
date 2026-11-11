@@ -32,25 +32,21 @@ export function emotionOf(id: string | null) {
   return EMOTIONS.find((e) => e.id === id) ?? null;
 }
 
-export function timeUntil(iso: string, now = new Date()) {
-  const ms = new Date(iso).getTime() - now.getTime();
-  if (ms <= 0) return "Opened";
-  const days = Math.floor(ms / 86_400_000);
-  const years = Math.floor(days / 365);
-  const rest = days % 365;
-  if (years > 0) return `Opens in ${years}y ${rest}d`;
-  if (days > 0) return `Opens in ${days} day${days === 1 ? "" : "s"}`;
-  const hours = Math.max(1, Math.floor(ms / 3_600_000));
-  return `Opens in ${hours} hour${hours === 1 ? "" : "s"}`;
-}
-
-export function formatDate(iso: string | null) {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", {
+/** Formats a date-only value like "2024-07-15" without time-zone shifting. */
+export function formatDay(ymd: string) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
+}
+
+/** YYYY-MM-DD in the browser's local time zone. */
+export function localYMD(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function isImage(path: string | null) {
