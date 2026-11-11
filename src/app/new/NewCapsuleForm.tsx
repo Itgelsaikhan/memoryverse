@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Archive, Hourglass, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EMOTIONS, localYMD, type CapsuleKind } from "@/lib/capsules";
+import { COUNTRIES } from "@/lib/countries";
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPT = "image/*,audio/*,video/mp4,video/quicktime";
@@ -27,6 +28,7 @@ export default function NewCapsuleForm() {
   const [location, setLocation] = useState("");
   const [unlockDate, setUnlockDate] = useState(() => addYears(1));
   const [isPublic, setIsPublic] = useState(false);
+  const [country, setCountry] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [today] = useState(() => localYMD(new Date()));
   const [tomorrow] = useState(() => localYMD(new Date(Date.now() + 86_400_000)));
@@ -55,6 +57,10 @@ export default function NewCapsuleForm() {
       setError("The opening date must be in the future.");
       return;
     }
+    if (isPublic && kind === "memory" && !country) {
+      setError("Choose a country to share this memory on the Humanity Map.");
+      return;
+    }
     setSaving(true);
     const supabase = createClient();
     try {
@@ -81,8 +87,9 @@ export default function NewCapsuleForm() {
         topic: topic.trim() || null,
         memory_date: kind === "memory" && memoryDate ? memoryDate : null,
         location_name: location.trim() || null,
+        country: country || null,
         media_path,
-        is_public: isPublic,
+        is_public: kind === "memory" && isPublic,
         unlock_at: kind === "future" ? new Date(`${unlockDate}T00:00:00`).toISOString() : null,
       });
       if (insErr) {
@@ -278,15 +285,38 @@ export default function NewCapsuleForm() {
           />
         </label>
 
-        <label className="flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={isPublic}
-            onChange={(e) => setIsPublic(e.target.checked)}
-            className="h-4 w-4 accent-violet-500"
-          />
-          Share anonymously on the Humanity Map (no name, city-level location only)
+        <label className="block text-sm">
+          <span className="mb-1 block text-white/70">Country</span>
+          <select className="input" value={country} onChange={(e) => setCountry(e.target.value)}>
+            <option value="">— Not specified —</option>
+            {COUNTRIES.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
         </label>
+
+        {kind === "memory" ? (
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-violet-500"
+            />
+            <span>
+              Share anonymously on the Humanity Map
+              <span className="block text-xs text-white/45">
+                Only the text, emotion, topic and country are shared — never your name, photo or exact place.
+              </span>
+            </span>
+          </label>
+        ) : (
+          <p className="text-xs text-white/45">
+            🔒 Future capsules are always private and never appear on the Humanity Map.
+          </p>
+        )}
       </div>
 
       {error && <p className="rounded-lg bg-red-500/15 p-3 text-sm text-red-300">{error}</p>}

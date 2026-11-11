@@ -1,21 +1,25 @@
-import { Globe2 } from "lucide-react";
-import ComingSoon from "@/components/ComingSoon";
+import { Suspense } from "react";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { createClient } from "@/lib/supabase/server";
+import type { CountryStats } from "@/lib/stats";
+import HumanityMap from "./HumanityMap";
 
 export const metadata = { title: "Humanity Map · MemoryVerse" };
 
 export default function MapPage() {
   return (
-    <ComingSoon
-      icon={Globe2}
-      week="IN DEVELOPMENT"
-      title="Humanity Map"
-      text="Anonymous memories and dreams from around the world, grouped into hexagons and colored by emotion."
-      bullets={[
-        "100,000+ real data points from open datasets",
-        "Filters by emotion, topic and year",
-        "Live updates as new capsules are shared",
-        "City-level privacy — exact locations are never shown",
-      ]}
-    />
+    <Suspense fallback={<div className="h-[calc(100vh-4rem)] animate-pulse bg-white/[0.02]" />}>
+      <MapContent />
+    </Suspense>
   );
+}
+
+async function MapContent() {
+  let stats: CountryStats[] = [];
+  if (isSupabaseConfigured) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("country_stats").select("*");
+    stats = (data ?? []) as CountryStats[];
+  }
+  return <HumanityMap stats={stats} />;
 }
