@@ -16,6 +16,9 @@ type SearchHit = { text: string; topic: string | null; emotion: string | null; c
 
 const EMPTY = "#1b2246";
 
+// MapLibre's worker is served from /public (see scripts/copy-maplibre-worker.mjs)
+maplibregl.setWorkerUrl("/vendor/maplibre-gl-worker.mjs");
+
 function colorize(base: GeoJSON.FeatureCollection, stats: Map<string, CountryStats>, filter: StatEmotion | null) {
   const maxTotal = Math.max(1, ...[...stats.values()].map((s) => s.total));
   const shares = filter
@@ -180,7 +183,10 @@ export default function HumanityMap({ stats }: { stats: CountryStats[] }) {
 
   return (
     <div className="relative h-[calc(100vh-4rem)] min-h-[560px] w-full overflow-hidden">
-      <div ref={container} className="absolute inset-0" aria-label="World map of shared moments" />
+      {/* maplibre's CSS sets position:relative on the map element, so it lives inside an absolute wrapper */}
+      <div className="absolute inset-0">
+        <div ref={container} className="h-full w-full" aria-label="World map of shared moments" />
+      </div>
 
       {mapError && (
         <div className="absolute inset-0 grid place-items-center text-white/60">Could not load the map. Please refresh.</div>
