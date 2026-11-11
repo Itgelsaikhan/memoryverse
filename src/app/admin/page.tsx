@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PageSkeleton from "@/components/PageSkeleton";
-import AdminPanel from "./AdminPanel";
+import AdminPanel, { type IndicatorMeta } from "./AdminPanel";
 
 export const metadata = { title: "Admin · MemoryVerse" };
 
@@ -19,6 +19,14 @@ async function AdminContent() {
   const { data: isAdmin } = await supabase.rpc("is_admin");
   if (!isAdmin) notFound();
 
-  const { data: counts } = await supabase.rpc("admin_source_counts");
-  return <AdminPanel initialCounts={(counts ?? []) as { source: string; n: number }[]} />;
+  const [{ data: counts }, { data: indicators }] = await Promise.all([
+    supabase.rpc("admin_source_counts"),
+    supabase.from("indicators").select("code, min_year, max_year, updated_at"),
+  ]);
+  return (
+    <AdminPanel
+      initialCounts={(counts ?? []) as { source: string; n: number }[]}
+      initialIndicators={(indicators ?? []) as IndicatorMeta[]}
+    />
+  );
 }

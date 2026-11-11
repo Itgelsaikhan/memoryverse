@@ -14,10 +14,14 @@ Save your memories, seal letters to your future self, and see how humanity's dre
 - **Humanity Map** (week 2) — 100k+ real moments (HappyDB) on a world map, colored by emotion; country stats from
   materialized views; full-text search; anonymous sharing of public memory capsules via a database trigger
 - **Admin panel** (`/admin`) — batched dataset import with progress, protected by an `admin` role checked in the database
-- Time Analytics — in development
+- **Time Analytics** (week 3) — life satisfaction (World Happiness Report, 2011–2025), happiness and trust
+  (World Values Survey, 1984–2022) by country; world trend, biggest risers/fallers, "what makes people happy at each
+  age" from HappyDB, and a personal emotion breakdown. Hand-built SVG charts with hover tooltips and table views;
+  series colors validated for color-vision deficiency
 
 ## Data sources
 - HappyDB — Asai, A., Evensen, S., Golshan, B., Halevy, A., Li, V., Lopatenko, A., Stepanov, D., Suhara, Y., Tan, W.-C., Xu, Y. (2018). *HappyDB: A Corpus of 100,000 Crowdsourced Happy Moments.* LREC 2018. Emotions are derived from HappyDB's categories plus keyword rules.
+- Survey indicators — World Happiness Report and World Values Survey, via Our World in Data (CC BY 4.0)
 - Country shapes — Natural Earth (public domain)
 
 ## Run locally

@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Database, RefreshCw, Trash2, Upload } from "lucide-react";
+import { Database, LineChart, RefreshCw, Trash2, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { INDICATORS, owidCsvToRows, type IndicatorDef } from "@/lib/indicators";
+
+export type IndicatorMeta = { code: string; min_year: number | null; max_year: number | null; updated_at: string };
 
 type Dataset = { columns: string[]; rows: unknown[][]; source: string };
 
@@ -34,9 +37,16 @@ async function loadDataset(url: string): Promise<Dataset> {
   return JSON.parse(text) as Dataset;
 }
 
-export default function AdminPanel({ initialCounts }: { initialCounts: { source: string; n: number }[] }) {
+export default function AdminPanel({
+  initialCounts,
+  initialIndicators,
+}: {
+  initialCounts: { source: string; n: number }[];
+  initialIndicators: IndicatorMeta[];
+}) {
   const router = useRouter();
   const [counts, setCounts] = useState(initialCounts);
+  const [indicators, setIndicators] = useState(initialIndicators);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -81,6 +91,43 @@ export default function AdminPanel({ initialCounts }: { initialCounts: { source:
       if (refErr) throw refErr;
       say("Statistics refreshed ✓");
       await reloadCounts();
+      router.refresh();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? "Import failed";
+      setError(msg);
+      say(`Error: ${msg}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function importIndicator(def: IndicatorDef) {
+    setError(null);
+    setBusy(def.code);
+    const supabase = createClient();
+    try {
+      const url = `https://ourworldindata.org/grapher/${def.owidSlug}.csv?v=1&csvType=full&useColumnShortNames=true`;
+      say(`Downloading ${def.name} from Our World in Data…`);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const rows = owidCsvToRows(await res.text());
+      if (rows.length === 0) throw new Error("No usable rows in the file");
+      say(`Parsed ${rows.length.toLocaleString()} country-year values. Saving…`);
+      const { data, error } = await supabase.rpc("admin_import_indicator", {
+        p_code: def.code,
+        p_meta: {
+          name: def.name,
+          unit: def.unit,
+          description: def.description,
+          source: def.source,
+          source_url: def.sourceUrl,
+        },
+        p_rows: rows,
+      });
+      if (error) throw error;
+      say(`${def.name}: saved ${Number(data).toLocaleString()} values ✓`);
+      const { data: meta } = await supabase.from("indicators").select("code, min_year, max_year, updated_at");
+      setIndicators((meta ?? []) as IndicatorMeta[]);
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? "Import failed";
@@ -167,6 +214,28 @@ export default function AdminPanel({ initialCounts }: { initialCounts: { source:
                 </p>
               </div>
             )}
+          </section>
+        );
+      })}
+
+      <h2 className="mt-10 flex items-center gap-2 text-xl font-semibold">
+        <LineChart size={20} className="text-cyan-mv" /> Time Analytics indicators
+      </h2>
+      <p className="mt-1 text-sm text-white/60">Multi-year values by country, downloaded live from Our World in Data.</p>
+      {INDICATORS.map((def) => {
+        const meta = indicators.find((i) => i.code === def.code);
+        return (
+          <section key={def.code} className="glass mt-4 flex flex-wrap items-center justify-between gap-4 p-5">
+            <div>
+              <h3 className="font-semibold">{def.name}</h3>
+              <p className="text-xs text-white/50">{def.source}</p>
+              <p className="mt-1 text-sm text-white/70">
+                {meta ? `Loaded: ${meta.min_year}–${meta.max_year}` : "Not loaded yet"}
+              </p>
+            </div>
+            <button className="btn-primary" onClick={() => importIndicator(def)} disabled={!!busy}>
+              <Upload size={16} /> {busy === def.code ? "Importing…" : meta ? "Update" : "Import"}
+            </button>
           </section>
         );
       })}
